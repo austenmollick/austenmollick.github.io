@@ -264,11 +264,25 @@
     .hero{padding-top:120px}
     .hero-grid,.about-grid{grid-template-columns:1fr;gap:40px}
     .voidgrid-canvas-wrap{height:220px}
-    .stage-labels,.stages{grid-template-columns:1fr;gap:0}
-    .stage-label{margin-top:18px}
-    .stage-label:first-child{margin-top:0}
-    .stage{padding-top:8px;padding-bottom:6px}
-    .stages .stage-label{display:block}
+    /* Stack stage-labels and stages into paired mobile blocks */
+    .stage-labels{display:none}
+    .stages{display:block}
+    .stage{
+      padding:10px 0 6px;
+      border-bottom:1px solid var(--gridline);
+      position:relative;
+    }
+    .stage:last-child{border-bottom:none}
+    .stage::before{
+      display:block;
+      font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;
+      color:var(--dim);margin-bottom:4px;
+    }
+    .stage:nth-child(1)::before{content:'PROBLEM'}
+    .stage:nth-child(2)::before{content:'APPROACH'}
+    .stage:nth-child(3)::before{content:'STACK'}
+    .stage:nth-child(4)::before{content:'IMPACT';color:var(--signal)}
+    .stage.impact::before{color:var(--signal)}
     .skills-grid,.cert-list{grid-template-columns:1fr}
     .flagship{padding:28px}
     .flagship-metrics{gap:28px}
@@ -323,7 +337,7 @@
     </div>
     <div class="about-grid">
       <div class="about-copy">
-        <p>I found data analytics in the least likely place: Twitch. Over five years I built a community of ~14,000 followers, and through that community I met a Tableau Zen Master who became my mentor and opened the door to the profession. Everything after that, I built myself — the SQL, the DAX, the Python, the automation stack, all of it learned by solving real problems on real deadlines.</p>
+        <p>I found data analytics in the least likely place: Twitch. Over five years I built a community of ~14,000 followers, and through that community I met Joe Mako, a Tableau Zen Master/Alteryx Ace who became my mentor and opened the door to the profession. Everything after that, I built myself — the SQL, the DAX, the Python, the automation stack, all of it learned by solving real problems on real deadlines.</p>
         <p>Today I build VP-facing reporting infrastructure across major national retail accounts at a Fortune 500 CPG company. My title says Sales Analyst. My commit history says otherwise: federated queries against multi-billion-row warehouses, custom pre-aggregation layers, semantic models served over XMLA, and automation pipelines that removed entire categories of manual work.</p>
         <p>I work from <em>Shoshin</em> — beginner’s mind. Being self-taught means I never assume I know the answer; I instrument the problem until it tells me. Every project runs through the same six-phase directive, because systems that skip verification ship errors, and systems that skip cleanup rot.</p>
       </div>
