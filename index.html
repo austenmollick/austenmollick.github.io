@@ -695,25 +695,50 @@
   var AMBER = 'rgba(255,180,84,';
   var DIM   = 'rgba(40,51,77,';
 
-  // --- Stars ---
+  // Edge margin — stars and nodes cluster toward edges
+  var EDGE = 0.22; // fraction of screen considered "edge zone"
+
+  function edgeX(){
+    // return x biased toward left or right edge
+    return Math.random() < 0.5
+      ? Math.random() * W * EDGE
+      : W - Math.random() * W * EDGE;
+  }
+  function edgeY(){
+    return Math.random() < 0.5
+      ? Math.random() * H * EDGE
+      : H - Math.random() * H * EDGE;
+  }
+  function edgePoint(){
+    // pick a random edge region
+    var side = Math.floor(Math.random() * 4);
+    if(side === 0) return { x: Math.random() * W, y: Math.random() * H * EDGE };
+    if(side === 1) return { x: Math.random() * W, y: H - Math.random() * H * EDGE };
+    if(side === 2) return { x: Math.random() * W * EDGE, y: Math.random() * H };
+    return { x: W - Math.random() * W * EDGE, y: Math.random() * H };
+  }
+
+  // --- Stars (edge-biased, glow+fade) ---
   var stars = [];
   function initStars(){
     stars = [];
-    var count = Math.floor((W * H) / 18000);
+    var count = Math.floor((W * H) / 10000);
     for(var i = 0; i < count; i++){
+      var pt = edgePoint();
+      var maxA = 0.55 + Math.random() * 0.45;
       stars.push({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        r: Math.random() * 1.2 + 0.3,
-        a: Math.random(),
-        da: (Math.random() * 0.003 + 0.001) * (Math.random() < 0.5 ? 1 : -1),
-        vx: (Math.random() - 0.5) * 0.08,
-        vy: (Math.random() - 0.5) * 0.08,
+        x: pt.x, y: pt.y,
+        r: Math.random() * 1.6 + 0.4,
+        a: Math.random() * maxA,
+        maxA: maxA,
+        da: (Math.random() * 0.006 + 0.002),
+        rising: Math.random() < 0.5,
+        glowR: Math.random() * 8 + 4,
       });
     }
   }
 
-  // --- Grid nodes ---
+  // --- Grid nodes (edge-biased) ---
   var GRID_COLS = 10, GRID_ROWS = 7;
   var nodes = [];
   function initNodes(){
@@ -721,11 +746,13 @@
     var gx = W / GRID_COLS, gy = H / GRID_ROWS;
     for(var r = 0; r <= GRID_ROWS; r++){
       for(var c = 0; c <= GRID_COLS; c++){
-        if(Math.random() < 0.28){
+        var inEdgeCol = c <= 1 || c >= GRID_COLS - 1;
+        var inEdgeRow = r <= 1 || r >= GRID_ROWS - 1;
+        var prob = (inEdgeCol || inEdgeRow) ? 0.45 : 0.08;
+        if(Math.random() < prob){
           nodes.push({
-            x: c * gx,
-            y: r * gy,
-            a: Math.random() * 0.6 + 0.2,
+            x: c * gx, y: r * gy,
+            a: Math.random() * 0.5 + 0.15,
             da: (Math.random() * 0.004 + 0.001) * (Math.random() < 0.5 ? 1 : -1),
           });
         }
@@ -733,18 +760,40 @@
     }
   }
 
-  // --- Sonar pulses ---
+  // --- Sonar pulses (edge-spawned) ---
   var pulses = [];
   var lastPulse = 0;
-  var PULSE_INTERVAL = 3800;
+  var PULSE_INTERVAL = 4200;
   function spawnPulse(now){
+    var pt = edgePoint();
     pulses.push({
-      x: Math.random() * W,
-      y: Math.random() * H,
+      x: pt.x, y: pt.y,
       r: 0,
-      maxR: Math.min(W, H) * (0.18 + Math.random() * 0.14),
+      maxR: Math.min(W, H) * (0.15 + Math.random() * 0.18),
       born: now,
-      dur: 3200,
+      dur: 3600,
+    });
+  }
+
+  // --- Shooting stars ---
+  var shoots = [];
+  var lastShoot = 0;
+  var SHOOT_INTERVAL = 7000;
+  function spawnShoot(now){
+    // start from top-left region, travel diagonally
+    var startX = Math.random() * W * 0.5;
+    var startY = Math.random() * H * 0.3;
+    var angle = (Math.PI / 6) + Math.random() * (Math.PI / 4);
+    var speed = 280 + Math.random() * 200;
+    var len = 60 + Math.random() * 80;
+    shoots.push({
+      x: startX, y: startY,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      len: len,
+      born: now,
+      dur: 900 + Math.random() * 400,
+      a: 0,
     });
   }
 
@@ -761,17 +810,23 @@
     initNodes();
   }
 
+  var last = 0;
   function draw(now){
+    var dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
     ctx.clearRect(0, 0, W, H);
 
-    // --- Grid lines (very faint) ---
+    // --- Grid lines (very faint, edges only) ---
     var gx = W / GRID_COLS, gy = H / GRID_ROWS;
-    ctx.strokeStyle = DIM + '0.18)';
-    ctx.lineWidth = 0.5;
+    ctx.lineWidth = 0.4;
     for(var c = 0; c <= GRID_COLS; c++){
+      var edgeFade = (c <= 1 || c >= GRID_COLS - 1) ? 0.14 : 0.05;
+      ctx.strokeStyle = DIM + edgeFade + ')';
       ctx.beginPath(); ctx.moveTo(c * gx, 0); ctx.lineTo(c * gx, H); ctx.stroke();
     }
     for(var r = 0; r <= GRID_ROWS; r++){
+      var edgeFade = (r <= 1 || r >= GRID_ROWS - 1) ? 0.14 : 0.05;
+      ctx.strokeStyle = DIM + edgeFade + ')';
       ctx.beginPath(); ctx.moveTo(0, r * gy); ctx.lineTo(W, r * gy); ctx.stroke();
     }
 
@@ -781,61 +836,98 @@
       if(age > p.dur) return false;
       var t = age / p.dur;
       p.r = p.maxR * t;
-      var alpha = (1 - t) * 0.18;
+      var alpha = (1 - t) * 0.15;
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
       ctx.strokeStyle = AMBER + alpha + ')';
-      ctx.lineWidth = 1.2;
+      ctx.lineWidth = 1.0;
       ctx.stroke();
-      // second ring slightly behind
-      if(p.r > 20){
-        var r2 = p.r * 0.65;
-        var a2 = (1 - t) * 0.09;
+      if(p.r > 15){
         ctx.beginPath();
-        ctx.arc(p.x, p.y, r2, 0, Math.PI * 2);
-        ctx.strokeStyle = AMBER + a2 + ')';
-        ctx.lineWidth = 0.7;
+        ctx.arc(p.x, p.y, p.r * 0.6, 0, Math.PI * 2);
+        ctx.strokeStyle = AMBER + ((1 - t) * 0.07) + ')';
+        ctx.lineWidth = 0.6;
         ctx.stroke();
       }
       return true;
     });
-
     if(now - lastPulse > PULSE_INTERVAL){
-      spawnPulse(now);
-      lastPulse = now;
+      spawnPulse(now); lastPulse = now;
     }
 
-    // --- Grid nodes (glowing amber dots) ---
+    // --- Grid nodes ---
     for(var i = 0; i < nodes.length; i++){
       var n = nodes[i];
       n.a += n.da;
-      if(n.a > 0.85 || n.a < 0.1){ n.da *= -1; }
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, 2, 0, Math.PI * 2);
-      ctx.fillStyle = AMBER + n.a + ')';
-      ctx.fill();
-      // soft glow
-      var g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 10);
-      g.addColorStop(0, AMBER + (n.a * 0.3) + ')');
+      if(n.a > 0.7 || n.a < 0.05){ n.da *= -1; }
+      var g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 12);
+      g.addColorStop(0, AMBER + n.a + ')');
+      g.addColorStop(0.4, AMBER + (n.a * 0.4) + ')');
       g.addColorStop(1, AMBER + '0)');
       ctx.beginPath();
-      ctx.arc(n.x, n.y, 10, 0, Math.PI * 2);
+      ctx.arc(n.x, n.y, 12, 0, Math.PI * 2);
       ctx.fillStyle = g;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = AMBER + Math.min(n.a * 1.4, 1) + ')';
       ctx.fill();
     }
 
-    // --- Stars ---
+    // --- Stars with glow+fade ---
     for(var i = 0; i < stars.length; i++){
       var s = stars[i];
-      s.a += s.da;
-      if(s.a > 1 || s.a < 0.05){ s.da *= -1; }
-      s.x += s.vx; s.y += s.vy;
-      if(s.x < 0) s.x = W; if(s.x > W) s.x = 0;
-      if(s.y < 0) s.y = H; if(s.y > H) s.y = 0;
+      if(s.rising){ s.a += s.da; if(s.a >= s.maxA){ s.rising = false; } }
+      else { s.a -= s.da; if(s.a <= 0){ s.rising = true; s.a = 0; } }
+      if(s.a <= 0) continue;
+      // glow halo
+      var g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.glowR);
+      g.addColorStop(0, AMBER + (s.a * 0.5) + ')');
+      g.addColorStop(1, AMBER + '0)');
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.glowR, 0, Math.PI * 2);
+      ctx.fillStyle = g;
+      ctx.fill();
+      // core dot
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = AMBER + (s.a * 0.7) + ')';
+      ctx.fillStyle = AMBER + s.a + ')';
       ctx.fill();
+    }
+
+    // --- Shooting stars ---
+    shoots = shoots.filter(function(s){
+      var age = now - s.born;
+      if(age > s.dur) return false;
+      var t = age / s.dur;
+      // fade in then out
+      s.a = t < 0.15 ? t / 0.15 : (1 - t) / 0.85;
+      s.a = Math.max(0, Math.min(1, s.a)) * 0.85;
+      var px = s.x + s.vx * (age / 1000);
+      var py = s.y + s.vy * (age / 1000);
+      var tx = px - Math.cos(Math.atan2(s.vy, s.vx)) * s.len;
+      var ty = py - Math.sin(Math.atan2(s.vy, s.vx)) * s.len;
+      var grad = ctx.createLinearGradient(tx, ty, px, py);
+      grad.addColorStop(0, AMBER + '0)');
+      grad.addColorStop(1, AMBER + s.a + ')');
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(px, py);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      // tip glow
+      var g = ctx.createRadialGradient(px, py, 0, px, py, 6);
+      g.addColorStop(0, AMBER + (s.a * 0.8) + ')');
+      g.addColorStop(1, AMBER + '0)');
+      ctx.beginPath();
+      ctx.arc(px, py, 6, 0, Math.PI * 2);
+      ctx.fillStyle = g;
+      ctx.fill();
+      return true;
+    });
+    if(now - lastShoot > SHOOT_INTERVAL){
+      spawnShoot(now); lastShoot = now;
     }
 
     requestAnimationFrame(draw);
