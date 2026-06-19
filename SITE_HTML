@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Austen “Sauce” Mollick — Analytics Engineer</title>
+<meta name="description" content="Self-taught analytics engineer. I find the gaps in billion-row data and build the systems that close them.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0D1320;
+    --surface:#151C2B;
+    --gridline:#28334D;
+    --ink:#E9EDF5;
+    --dim:#8A94A8;
+    --signal:#FFB454;
+    --closed:#5FA876;
+    --max:1180px;
+    --font-display:"Bricolage Grotesque", system-ui, sans-serif;
+    --font-body:"IBM Plex Sans", system-ui, sans-serif;
+    --font-mono:"IBM Plex Mono", ui-monospace, monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{animation:none!important;transition:none!important}
+  }
+  body{
+    background:var(--void);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:17px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--signal);color:var(--void)}
+  a{color:var(--signal);text-decoration:none}
+  a:hover{text-decoration:underline;text-underline-offset:3px}
+  :focus-visible{outline:2px solid var(--signal);outline-offset:3px;border-radius:2px}
+
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
+
+  /* ---------- Nav ---------- */
+  .nav{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    background:rgba(13,19,32,.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--gridline);
+  }
+  .nav-inner{
+    max-width:var(--max);margin:0 auto;padding:14px 24px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+  }
+  .nav-name{
+    font-family:var(--font-mono);font-size:13px;color:var(--ink);
+    letter-spacing:.04em;white-space:nowrap;
+  }
+  .nav-name b{color:var(--signal);font-weight:500}
+  .nav-links{display:flex;gap:22px;list-style:none}
+  .nav-links a{
+    font-family:var(--font-mono);font-size:13px;color:var(--dim);
+    letter-spacing:.04em;
+  }
+  .nav-links a:hover{color:var(--signal);text-decoration:none}
+
+  section{scroll-margin-top:76px}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding:140px 0 72px;
+    border-bottom:1px solid var(--gridline);
+  }
+  .hero-grid{
+    display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);
+    gap:48px;align-items:center;
+  }
+  .eyebrow{
+    font-family:var(--font-mono);font-size:13px;color:var(--dim);
+    letter-spacing:.08em;margin-bottom:20px;
+  }
+  .eyebrow .tick{color:var(--signal)}
+  h1{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:clamp(34px,4.6vw,56px);
+    line-height:1.08;
+    letter-spacing:-.015em;
+    margin-bottom:24px;
+  }
+  h1 .missing{color:var(--signal)}
+  .hero-sub{
+    font-size:18px;color:var(--dim);max-width:54ch;margin-bottom:14px;
+  }
+  .hero-sub strong{color:var(--ink);font-weight:600}
+  .hero-id{
+    font-family:var(--font-mono);font-size:14px;color:var(--dim);
+    margin-bottom:32px;
+  }
+  .hero-cta{display:flex;gap:14px;flex-wrap:wrap}
+  .btn{
+    display:inline-block;font-family:var(--font-mono);font-size:14px;
+    padding:12px 22px;border-radius:4px;letter-spacing:.02em;
+  }
+  .btn-primary{background:var(--signal);color:var(--void);font-weight:500}
+  .btn-primary:hover{text-decoration:none;filter:brightness(1.08)}
+  .btn-ghost{border:1px solid var(--gridline);color:var(--ink)}
+  .btn-ghost:hover{text-decoration:none;border-color:var(--signal);color:var(--signal)}
+
+  .voidgrid-panel{
+    background:var(--surface);
+    border:1px solid var(--gridline);
+    border-radius:8px;
+    padding:16px;
+  }
+  .voidgrid-canvas-wrap{height:300px;position:relative}
+  .voidgrid-readout{
+    display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    font-family:var(--font-mono);font-size:12.5px;color:var(--dim);
+    border-top:1px solid var(--gridline);
+    padding-top:12px;margin-top:12px;
+  }
+  .voidgrid-readout .open b{color:var(--signal);font-weight:500}
+  .voidgrid-readout .closed b{color:var(--closed);font-weight:500}
+  .voidgrid-caption{
+    font-family:var(--font-mono);font-size:11.5px;color:var(--dim);
+    margin-top:10px;opacity:.75;
+  }
+
+  /* ---------- Sections ---------- */
+  .section{padding:88px 0;border-bottom:1px solid var(--gridline)}
+  .section-head{margin-bottom:48px;max-width:62ch}
+  h2{
+    font-family:var(--font-display);font-weight:700;
+    font-size:clamp(26px,3.2vw,36px);letter-spacing:-.01em;
+    margin-bottom:14px;
+  }
+  .section-lede{color:var(--dim);font-size:17px}
+
+  /* ---------- About ---------- */
+  .about-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:56px}
+  .about-copy p{margin-bottom:18px}
+  .about-copy p:last-child{margin-bottom:0}
+  .about-aside{
+    background:var(--surface);border:1px solid var(--gridline);
+    border-radius:8px;padding:28px;height:fit-content;
+  }
+  .about-aside h3{
+    font-family:var(--font-mono);font-weight:500;font-size:13px;
+    color:var(--dim);letter-spacing:.08em;margin-bottom:22px;
+  }
+  .directive{list-style:none}
+  .directive li{
+    display:flex;align-items:center;gap:14px;
+    font-family:var(--font-mono);font-size:14.5px;
+    padding:10px 0;
+  }
+  .directive li + li{border-top:1px dashed var(--gridline)}
+  .directive .node{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--gridline);flex-shrink:0;
+    border:1px solid var(--dim);
+  }
+  .directive li:last-child .node{background:var(--closed);border-color:var(--closed)}
+  .directive .arrow{color:var(--dim);margin-left:auto;font-size:12px}
+  .about-aside .aside-note{
+    font-size:14px;color:var(--dim);margin-top:22px;line-height:1.6;
+  }
+
+  /* ---------- Projects ---------- */
+  .stage-labels,.stages{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+  .stage-label{
+    font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;
+    color:var(--dim);padding-bottom:8px;border-bottom:1px solid var(--gridline);
+  }
+  .stage-label.impact{color:var(--signal);border-bottom-color:var(--signal)}
+  .stage{font-size:15px;line-height:1.6;padding-top:12px}
+  .stage.impact{color:var(--ink)}
+
+  .flagship{
+    background:var(--surface);border:1px solid var(--gridline);
+    border-radius:8px;padding:40px;margin-bottom:56px;
+  }
+  .flagship-tag{
+    font-family:var(--font-mono);font-size:12px;color:var(--signal);
+    letter-spacing:.1em;margin-bottom:14px;
+  }
+  .flagship h3{
+    font-family:var(--font-display);font-weight:700;
+    font-size:clamp(22px,2.6vw,30px);margin-bottom:24px;letter-spacing:-.01em;
+  }
+  .flagship-metrics{
+    display:flex;gap:48px;flex-wrap:wrap;
+    padding:24px 0;margin-bottom:28px;
+    border-top:1px solid var(--gridline);border-bottom:1px solid var(--gridline);
+  }
+  .metric{font-family:var(--font-mono)}
+  .metric .num{
+    display:block;font-size:clamp(28px,3.4vw,40px);font-weight:500;
+    color:var(--signal);letter-spacing:-.02em;line-height:1.15;
+  }
+  .metric .lbl{display:block;font-size:12.5px;color:var(--dim);margin-top:6px;letter-spacing:.04em}
+  .stack-row{
+    margin-top:28px;display:flex;gap:8px;flex-wrap:wrap;
+  }
+  .chip{
+    font-family:var(--font-mono);font-size:12.5px;color:var(--dim);
+    border:1px solid var(--gridline);border-radius:4px;padding:4px 10px;
+  }
+
+  .project{
+    border:1px solid var(--gridline);border-radius:8px;
+    padding:32px;margin-bottom:24px;background:transparent;
+  }
+  .project h3{
+    font-family:var(--font-display);font-weight:700;font-size:21px;
+    margin-bottom:20px;letter-spacing:-.005em;
+  }
+  .project .stages{margin-top:0}
+
+  /* ---------- Skills ---------- */
+  .skills-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-bottom:56px}
+  .skill-group{
+    background:var(--surface);border:1px solid var(--gridline);
+    border-radius:8px;padding:28px;
+  }
+  .skill-group h3{
+    font-family:var(--font-mono);font-weight:500;font-size:13px;
+    letter-spacing:.08em;color:var(--signal);margin-bottom:14px;
+  }
+  .skill-group p{font-size:15px;color:var(--ink);line-height:1.7}
+  .certs h3{
+    font-family:var(--font-mono);font-weight:500;font-size:13px;
+    letter-spacing:.08em;color:var(--dim);margin-bottom:18px;
+  }
+  .cert-list{list-style:none;display:grid;grid-template-columns:repeat(2,1fr);gap:10px 32px}
+  .cert-list li{
+    font-size:15px;padding:10px 0;border-bottom:1px dashed var(--gridline);
+    display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+  }
+  .cert-status{
+    font-family:var(--font-mono);font-size:11.5px;letter-spacing:.05em;
+    color:var(--closed);white-space:nowrap;
+  }
+  .cert-status.progress{color:var(--signal)}
+
+  /* ---------- Contact ---------- */
+  .contact{text-align:left;padding:96px 0}
+  .contact h2{margin-bottom:18px}
+  .contact p{color:var(--dim);max-width:52ch;margin-bottom:36px}
+  .contact-links{display:flex;gap:14px;flex-wrap:wrap}
+
+  footer{
+    padding:28px 0 40px;
+    font-family:var(--font-mono);font-size:12.5px;color:var(--dim);
+  }
+  footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:900px){
+    .hero{padding-top:120px}
+    .hero-grid,.about-grid{grid-template-columns:1fr;gap:40px}
+    .voidgrid-canvas-wrap{height:220px}
+    .stage-labels,.stages{grid-template-columns:1fr;gap:0}
+    .stage-label{margin-top:18px}
+    .stage-label:first-child{margin-top:0}
+    .stage{padding-top:8px;padding-bottom:6px}
+    .stages .stage-label{display:block}
+    .skills-grid,.cert-list{grid-template-columns:1fr}
+    .flagship{padding:28px}
+    .flagship-metrics{gap:28px}
+    .nav-links{gap:14px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav" aria-label="Primary">
+  <div class="nav-inner">
+    <span class="nav-name"><b>sauce</b>@analytics-engineering:~$</span>
+    <ul class="nav-links">
+      <li><a href="#about">about</a></li>
+      <li><a href="#projects">projects</a></li>
+      <li><a href="#skills">skills</a></li>
+      <li><a href="#contact">contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow"><span class="tick">▸</span> ANALYTICS ENGINEER · BI DEVELOPER · DATA ANALYST</p>
+      <h1>Most dashboards show what’s there.<br>I build systems that find <span class="missing">what’s missing.</span></h1>
+      <p class="hero-sub">I’m <strong>Austen “Sauce” Mollick</strong> — a self-taught analytics engineer who queries billion-row warehouses, models the results into star schemas, and automates everything in between. My flagship analysis surfaced <strong>$120M+ in annualized opportunity</strong> hidden inside 3.8 billion rows.</p>
+      <p class="hero-id">currently: Sales Analyst, Category Management · Fortune 500 CPG · operating well above title</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#contact">Get in touch</a>
+        <a class="btn btn-ghost" href="#projects">See the work</a>
+      </div>
+    </div>
+    <div class="voidgrid-panel" role="img" aria-label="Animated matrix of store-by-product cells. Empty cells represent distribution voids; a sweep closes them, turning them green.">
+      <div class="voidgrid-canvas-wrap"><canvas id="voidgrid" aria-hidden="true"></canvas></div>
+      <div class="voidgrid-readout" aria-hidden="true">
+        <span class="open">open_voids: <b id="ro-open">—</b></span>
+        <span class="closed">net_closed: <b id="ro-closed">—</b></span>
+      </div>
+      <p class="voidgrid-caption">// store × product matrix — finding and closing distribution voids</p>
+    </div>
+  </div>
+</header>
+
+<section class="section" id="about">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>No degree. No bootcamp. A livestream, a mentor, and a lot of shipped work.</h2>
+    </div>
+    <div class="about-grid">
+      <div class="about-copy">
+        <p>I found data analytics in the least likely place: Twitch. Over five years I built a community of ~14,000 followers, and through that community I met a Tableau Zen Master who became my mentor and opened the door to the profession. Everything after that, I built myself — the SQL, the DAX, the Python, the automation stack, all of it learned by solving real problems on real deadlines.</p>
+        <p>Today I build VP-facing reporting infrastructure across major national retail accounts at a Fortune 500 CPG company. My title says Sales Analyst. My commit history says otherwise: federated queries against multi-billion-row warehouses, custom pre-aggregation layers, semantic models served over XMLA, and automation pipelines that removed entire categories of manual work.</p>
+        <p>I work from <em>Shoshin</em> — beginner’s mind. Being self-taught means I never assume I know the answer; I instrument the problem until it tells me. Every project runs through the same six-phase directive, because systems that skip verification ship errors, and systems that skip cleanup rot.</p>
+      </div>
+      <aside class="about-aside">
+        <h3>ENGINEERING DIRECTIVE — EVERY PROJECT, EVERY TIME</h3>
+        <ol class="directive">
+          <li><span class="node"></span>Understand<span class="arrow">↓</span></li>
+          <li><span class="node"></span>Plan<span class="arrow">↓</span></li>
+          <li><span class="node"></span>Act<span class="arrow">↓</span></li>
+          <li><span class="node"></span>Verify<span class="arrow">↓</span></li>
+          <li><span class="node"></span>Clean<span class="arrow">↓</span></li>
+          <li><span class="node"></span>Report</li>
+        </ol>
+        <p class="aside-note">A real sequence, not a slogan — it’s the same loop that root-caused a 72% false-mismatch rate before it reached leadership.</p>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="projects">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Case studies</h2>
+      <p class="section-lede">Every project follows the same shape: a real problem, an engineered approach, measurable impact. Proprietary details stay generic; the numbers are real.</p>
+    </div>
+
+    <!-- Flagship -->
+    <article class="flagship">
+      <p class="flagship-tag">FLAGSHIP</p>
+      <h3>Distribution Void Analysis at Scale</h3>
+      <div class="flagship-metrics">
+        <div class="metric"><span class="num">$120–133M</span><span class="lbl">annualized opportunity surfaced</span></div>
+        <div class="metric"><span class="num">3.8B+</span><span class="lbl">rows queried, store-UPC-week grain</span></div>
+        <div class="metric"><span class="num">~1,500</span><span class="lbl">region/product combinations flagged</span></div>
+      </div>
+      <div class="stage-labels" aria-hidden="true">
+        <span class="stage-label">PROBLEM</span>
+        <span class="stage-label">APPROACH</span>
+        <span class="stage-label">STACK</span>
+        <span class="stage-label impact">IMPACT</span>
+      </div>
+      <div class="stages">
+        <p class="stage">Distribution gaps across thousands of store/product combinations were invisible at the granularity leadership needed to act on them.</p>
+        <p class="stage">Built a multi-phase Databricks SQL analysis against a 3.8B+ row Snowflake-federated fact table, then engineered a custom pre-aggregation layer (<code>FactVoidPeriod</code>) feeding a Power BI star schema — period-over-period matrices with DAX measures for open voids, net closed voids, and % close rates.</p>
+        <p class="stage">Databricks SQL, Snowflake federation, Power BI star schema, DAX, heatmap conditional formatting.</p>
+        <p class="stage impact">Surfaced ~$120–133M in annualized distribution opportunity. Became a standing VP-facing report driving close-rate accountability.</p>
+      </div>
+      <div class="stack-row">
+        <span class="chip">Databricks SQL</span><span class="chip">Snowflake federation</span><span class="chip">Power BI</span><span class="chip">DAX</span><span class="chip">star schema</span>
+      </div>
+    </article>
+
+    <!-- Project 2 -->
+    <article class="project">
+      <h3>Email-to-Insight Automation Pipelines</h3>
+      <div class="stage-labels" aria-hidden="true">
+        <span class="stage-label">PROBLEM</span>
+        <span class="stage-label">APPROACH</span>
+        <span class="stage-label">STACK</span>
+        <span class="stage-label impact">IMPACT</span>
+      </div>
+      <div class="stages">
+        <p class="stage">Weekly retail data arrived as email attachments requiring manual handling across multiple national accounts.</p>
+        <p class="stage">Power Automate + Office Scripts pipelines that ingest emailed files, validate filenames, normalize headers, route XLSX and CSV variants down separate branches, and land clean data in SharePoint — including a SharePoint REST API workaround for files exceeding Power Automate payload limits.</p>
+        <p class="stage">Power Automate, Office Scripts, SharePoint REST API, Power BI.</p>
+        <p class="stage impact">Eliminated manual weekly processing across multiple accounts. Reports now refresh without human touch.</p>
+      </div>
+    </article>
+
+    <!-- Project 3 -->
+    <article class="project">
+      <h3>Web Automation for Syndicated Data</h3>
+      <div class="stage-labels" aria-hidden="true">
+        <span class="stage-label">PROBLEM</span>
+        <span class="stage-label">APPROACH</span>
+        <span class="stage-label">STACK</span>
+        <span class="stage-label impact">IMPACT</span>
+      </div>
+      <div class="stages">
+        <p class="stage">Weekly syndicated data exports required manual downloads from a vendor portal.</p>
+        <p class="stage">Python + Selenium automation that handles an Angular CDK virtual-scroll interface to reliably detect and download each week’s export files.</p>
+        <p class="stage">Python, Selenium, Angular CDK scroll handling.</p>
+        <p class="stage impact">Removed a recurring manual task entirely and standardized the ingestion path.</p>
+      </div>
+    </article>
+
+    <!-- Project 4 -->
+    <article class="project">
+      <h3>API-Driven Data Validation: Retail Shelf Capacity</h3>
+      <div class="stage-labels" aria-hidden="true">
+        <span class="stage-label">PROBLEM</span>
+        <span class="stage-label">APPROACH</span>
+        <span class="stage-label">STACK</span>
+        <span class="stage-label impact">IMPACT</span>
+      </div>
+      <div class="stages">
+        <p class="stage">Planogram capacity files appeared to conflict heavily with a retailer’s out-of-stock API data — a discrepancy headed straight for leadership.</p>
+        <p class="stage">Built a comparison engine between planogram CSVs and the retailer’s API, then root-caused the gap instead of reporting it at face value.</p>
+        <p class="stage">Python, retailer OOS API, CSV reconciliation.</p>
+        <p class="stage impact">Proved 72% of apparent mismatches were scope artifacts (vendor-only API vs. all-vendor files) — preventing bad conclusions from reaching leadership.</p>
+      </div>
+    </article>
+
+    <!-- Project 5 -->
+    <article class="project">
+      <h3>Legacy Report Modernization: Lost Sales</h3>
+      <div class="stage-labels" aria-hidden="true">
+        <span class="stage-label">PROBLEM</span>
+        <span class="stage-label">APPROACH</span>
+        <span class="stage-label">STACK</span>
+        <span class="stage-label impact">IMPACT</span>
+      </div>
+      <div class="stages">
+        <p class="stage">A business-critical report depended on a local file path and stale field data — one machine failure away from breaking.</p>
+        <p class="stage">Migrated the report to SharePoint and injected live field-rep data via XMLA endpoint from a custom semantic model.</p>
+        <p class="stage">Power BI, XMLA endpoint, custom semantic model, SharePoint.</p>
+        <p class="stage impact">Turned a fragile local artifact into a governed, refreshable asset.</p>
+      </div>
+    </article>
+
+    <!-- Project 6 -->
+    <article class="project">
+      <h3>Infrastructure Workarounds</h3>
+      <div class="stage-labels" aria-hidden="true">
+        <span class="stage-label">PROBLEM</span>
+        <span class="stage-label">APPROACH</span>
+        <span class="stage-label">STACK</span>
+        <span class="stage-label impact">IMPACT</span>
+      </div>
+      <div class="stages">
+        <p class="stage">IP access restrictions blocked Power BI Service from reaching Databricks directly — a platform constraint, not a data problem.</p>
+        <p class="stage">Designed a Python → SharePoint → Power BI pipeline that routes around the restriction with a governed intermediate layer.</p>
+        <p class="stage">Python, SharePoint, Power BI Service.</p>
+        <p class="stage impact">Kept reporting live by engineering around the constraint instead of accepting it.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="section" id="skills">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Skills &amp; certifications</h2>
+      <p class="section-lede">Grouped by what the work actually requires — not a wall of logos.</p>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-group">
+        <h3>DATA ENGINEERING &amp; SQL</h3>
+        <p>Databricks SQL · Snowflake-federated querying · query optimization at billions-of-rows scale · pre-aggregation layer design</p>
+      </div>
+      <div class="skill-group">
+        <h3>BI &amp; SEMANTIC MODELING</h3>
+        <p>Power BI · DAX · star schemas · XMLA endpoints · RLS · composite models · Power Query M</p>
+      </div>
+      <div class="skill-group">
+        <h3>AUTOMATION</h3>
+        <p>Power Automate · Office Scripts · Power Apps · SharePoint REST API · email-to-pipeline ingestion</p>
+      </div>
+      <div class="skill-group">
+        <h3>PYTHON</h3>
+        <p>Selenium · pandas · file-system automation · API integration · web automation for data acquisition</p>
+      </div>
+    </div>
+    <div class="certs">
+      <h3>CERTIFICATIONS &amp; CREDENTIALS</h3>
+      <ul class="cert-list">
+        <li>DP-600 Microsoft Fabric Analytics Engineer <span class="cert-status progress">IN PROGRESS · EXAM SCHEDULED</span></li>
+        <li>Databricks Fundamentals <span class="cert-status">EARNED</span></li>
+        <li>Databricks Generative AI Fundamentals <span class="cert-status">EARNED</span></li>
+        <li>HackerRank SQL &amp; Python <span class="cert-status">EARNED</span></li>
+        <li>Snowflake Data Warehousing Workshop Badge <span class="cert-status">EARNED</span></li>
+        <li>Microsoft AI Skills Fest 2026 <span class="cert-status">COMPLETED</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="wrap">
+    <h2>If your data has gaps, let’s talk.</h2>
+    <p>I’m open to Analytics Engineer, BI Developer, and Data Analyst roles. The fastest way to evaluate me is to ask about any project above — I can walk you through every layer of it.</p>
+    <div class="contact-links">
+      <a class="btn btn-primary" href="mailto:[EMAIL]">Email me</a>
+      <a class="btn btn-ghost" href="[LINKEDIN URL]" rel="noopener">LinkedIn</a>
+      <a class="btn btn-ghost" href="[GITHUB URL]" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>Austen “Sauce” Mollick — built by hand, like everything else here.</span>
+    <span>understand → plan → act → verify → clean → report</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var canvas = document.getElementById('voidgrid');
+  if(!canvas || !canvas.getContext) return;
+  var ctx = canvas.getContext('2d');
+  var roOpen = document.getElementById('ro-open');
+  var roClosed = document.getElementById('ro-closed');
+
+  var CELL = 13, GAP = 4, VOID_RATE = 0.13, TOTAL_COMBOS = 1508;
+  var cells = [], totalVoids = 0, W = 0, H = 0;
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Deterministic PRNG so the grid is stable across resizes
+  function makeRng(seed){
+    return function(){
+      seed = (seed * 16807) % 2147483647;
+      return (seed - 1) / 2147483646;
+    };
+  }
+
+  function build(){
+    var wrap = canvas.parentElement;
+    var rect = wrap.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    W = rect.width; H = rect.height;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    var cols = Math.floor((W + GAP) / (CELL + GAP));
+    var rows = Math.floor((H + GAP) / (CELL + GAP));
+    var ox = (W - (cols * (CELL + GAP) - GAP)) / 2;
+    var oy = (H - (rows * (CELL + GAP) - GAP)) / 2;
+
+    var rng = makeRng(20260611);
+    cells = []; totalVoids = 0;
+    for(var r = 0; r < rows; r++){
+      for(var c = 0; c < cols; c++){
+        var isVoid = rng() < VOID_RATE;
+        if(isVoid) totalVoids++;
+        cells.push({
+          x: ox + c * (CELL + GAP),
+          y: oy + r * (CELL + GAP),
+          v: isVoid,
+          closedT: null   // timestamp when the sweep passed this void
+        });
+      }
+    }
+  }
+
+  function lerpColor(a, b, t){
+    return 'rgb(' + Math.round(a[0]+(b[0]-a[0])*t) + ',' +
+                    Math.round(a[1]+(b[1]-a[1])*t) + ',' +
+                    Math.round(a[2]+(b[2]-a[2])*t) + ')';
+  }
+  var AMBER = [255,180,84], GREEN = [95,168,118];
+
+  function draw(now, sweepX, animating){
+    ctx.clearRect(0, 0, W, H);
+    var passedVoids = 0;
+    for(var i = 0; i < cells.length; i++){
+      var cl = cells[i];
+      if(!cl.v){
+        ctx.fillStyle = 'rgba(40,51,77,0.45)';
+        ctx.fillRect(cl.x, cl.y, CELL, CELL);
+        continue;
+      }
+      var passed = sweepX === null || cl.x + CELL / 2 <= sweepX;
+      if(!passed){
+        // open void: darker than background, hairline edge
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+        ctx.fillRect(cl.x, cl.y, CELL, CELL);
+        ctx.strokeStyle = 'rgba(40,51,77,0.6)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(cl.x + .5, cl.y + .5, CELL - 1, CELL - 1);
+      } else {
+        passedVoids++;
+        if(cl.closedT === null) cl.closedT = now;
+        var t = sweepX === null ? 1 : Math.min(1, (now - cl.closedT) / 600);
+        ctx.fillStyle = lerpColor(AMBER, GREEN, t);
+        ctx.fillRect(cl.x, cl.y, CELL, CELL);
+      }
+    }
+
+    if(animating && sweepX !== null && sweepX < W){
+      var grad = ctx.createLinearGradient(sweepX - 36, 0, sweepX, 0);
+      grad.addColorStop(0, 'rgba(255,180,84,0)');
+      grad.addColorStop(1, 'rgba(255,180,84,0.35)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(sweepX - 36, 0, 36, H);
+      ctx.fillStyle = 'rgba(255,180,84,0.9)';
+      ctx.fillRect(sweepX, 0, 1.5, H);
+    }
+    // Map on-screen voids to the real-world combo count
+    var closed = totalVoids ? Math.round(TOTAL_COMBOS * passedVoids / totalVoids) : 0;
+    if(roOpen) roOpen.textContent = (TOTAL_COMBOS - closed).toLocaleString();
+    if(roClosed) roClosed.textContent = closed.toLocaleString();
+  }
+
+  function finalFrame(){
+    for(var i = 0; i < cells.length; i++) cells[i].closedT = 0;
+    draw(performance.now(), null, false);
+  }
+
+  var DURATION = 2400, startT = null, done = false;
+  function frame(now){
+    if(startT === null) startT = now;
+    var p = Math.min(1, (now - startT) / DURATION);
+    // ease-in-out
+    var e = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+    var sweepX = e * (W + 60);
+    if(p < 1){
+      draw(now, sweepX, true);
+      requestAnimationFrame(frame);
+    } else if(now - startT < DURATION + 700){
+      // let the last amber-to-green settles finish
+      draw(now, W + 60, false);
+      requestAnimationFrame(frame);
+    } else {
+      done = true;
+      finalFrame();
+    }
+  }
+
+  build();
+  if(reduced){
+    done = true;
+    finalFrame();
+  } else {
+    // brief pause so the "open" state registers before the sweep
+    draw(performance.now(), -1, false);
+    setTimeout(function(){ requestAnimationFrame(frame); }, 450);
+  }
+
+  var resizeTimer;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function(){
+      build();
+      finalFrame(); // never replay on resize — one orchestrated moment only
+      done = true;
+    }, 120);
+  });
+})();
+
+</script>
+</body>
+</html>
