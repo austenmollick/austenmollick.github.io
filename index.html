@@ -288,6 +288,160 @@
     .flagship-metrics{gap:28px}
     .nav-links{gap:14px}
   }
+
+  /* ---------- Scroll choreography ---------- */
+  /* Thin progress bar tracking read position */
+  .scroll-progress{
+    position:fixed;top:0;left:0;height:2px;width:0;z-index:60;
+    background:linear-gradient(90deg,var(--signal),#ffd9a0);
+    box-shadow:0 0 12px rgba(255,180,84,.55);
+    transition:width .1s linear;
+  }
+  /* Reveal-on-scroll. Hidden state only applies once JS marks the doc ready,
+     so anyone with JS disabled still sees all content. */
+  html.reveal-ready .reveal{
+    opacity:0;transform:translateY(22px);
+    transition:opacity .7s cubic-bezier(.2,.7,.2,1),
+               transform .7s cubic-bezier(.2,.7,.2,1);
+    transition-delay:var(--reveal-delay,0ms);
+    will-change:opacity,transform;
+  }
+  html.reveal-ready .reveal.is-visible{opacity:1;transform:none}
+
+  /* Active nav link as you scroll */
+  .nav-links a.active{color:var(--signal)}
+  .nav-links a.active::after{
+    content:'';display:block;height:1px;margin-top:3px;
+    background:var(--signal);box-shadow:0 0 8px rgba(255,180,84,.6);
+  }
+
+  /* Hover micro-interactions on cards */
+  .project{transition:transform .35s cubic-bezier(.2,.7,.2,1),
+                      border-color .35s ease, box-shadow .35s ease}
+  .project:hover{
+    transform:translateY(-4px);border-color:var(--signal);
+    box-shadow:0 18px 44px -26px rgba(255,180,84,.5);
+  }
+  .skill-group{transition:transform .35s cubic-bezier(.2,.7,.2,1),
+                          border-color .35s ease}
+  .skill-group:hover{transform:translateY(-3px);border-color:var(--signal)}
+  .metric .num{transition:text-shadow .5s ease}
+  .reveal.is-visible .num{text-shadow:0 0 26px rgba(255,180,84,.4)}
+  .voidgrid-panel{transition:transform .1s linear;will-change:transform}
+
+  /* Honor reduced-motion: force content visible, drop motion */
+  @media (prefers-reduced-motion: reduce){
+    html.reveal-ready .reveal{opacity:1!important;transform:none!important}
+    .scroll-progress{display:none}
+    .project:hover,.skill-group:hover{transform:none}
+    .voidgrid-panel{transform:none!important}
+  }
+
+  /* ---------- Cinematic cover ---------- */
+  .cover{position:relative;height:220vh}
+  .cover-stage{position:sticky;top:0;height:100vh;overflow:hidden;--p:0}
+
+  .cover-scene{
+    position:absolute;inset:0;
+    transform:translateY(calc(var(--p) * -8vh)) scale(calc(1 + var(--p) * 0.12));
+    transform-origin:50% 72%;will-change:transform;
+  }
+  .sky-night{
+    position:absolute;inset:0;
+    background:linear-gradient(to bottom,
+      rgba(13,19,32,0) 0%, rgba(13,19,32,.40) 30%,
+      rgba(18,20,38,.80) 55%, rgba(20,22,40,.95) 76%, rgba(13,19,32,1) 100%);
+  }
+  .sky-warm{
+    position:absolute;inset:0;
+    background:linear-gradient(to bottom,
+      rgba(255,160,84,0) 54%, rgba(150,72,60,.45) 73%,
+      rgba(214,118,62,.80) 86%, rgba(255,180,84,.95) 95%, rgba(255,214,160,1) 100%);
+    opacity:calc(1 - var(--p) * 1.15);will-change:opacity;
+  }
+  .sun{
+    position:absolute;left:50%;bottom:30vh;width:44vmax;height:44vmax;
+    transform:translateX(-50%);border-radius:50%;filter:blur(2px);
+    background:radial-gradient(circle,
+      rgba(255,224,180,.95) 0%, rgba(255,186,96,.55) 16%,
+      rgba(255,150,80,.22) 34%, rgba(255,150,80,0) 60%);
+    opacity:calc(1 - var(--p));
+  }
+  .cover-land{
+    position:absolute;left:0;right:0;bottom:0;height:34vh;
+    transform:translateY(calc(var(--p) * 18vh));will-change:transform;
+  }
+  .cover-land::before{
+    content:'';position:absolute;top:-1px;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,rgba(255,210,160,.9),transparent);
+    box-shadow:0 0 60px 16px rgba(255,180,84,.40);
+  }
+  .cover-land svg{position:absolute;left:0;bottom:0;width:100%;height:100%;display:block}
+  .hill-far{fill:#0f1626}
+  .hill-near{fill:#05080f}
+
+  .cover-overlay{
+    position:absolute;inset:0;z-index:5;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:0 24px 15vh;
+    transform:translateY(calc(var(--p) * -12vh));
+    opacity:calc(1 - var(--p) * 2);will-change:transform,opacity;
+  }
+  .cover-overlay > *{animation:coverIn .9s both cubic-bezier(.2,.7,.2,1)}
+  .cover-eyebrow{animation-delay:.1s}
+  .cover-setup{animation-delay:.26s}
+  .cover-title{animation-delay:.42s}
+  .cover-sub{animation-delay:.64s}
+  @keyframes coverIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+  .cover-eyebrow{
+    font-family:var(--font-mono);font-size:13px;color:var(--dim);
+    letter-spacing:.16em;margin-bottom:22px;text-transform:uppercase;
+  }
+  .cover-eyebrow .tick{color:var(--signal)}
+  .cover-setup{
+    font-family:var(--font-body);font-size:clamp(17px,2.2vw,22px);
+    color:var(--dim);margin-bottom:14px;
+  }
+  .cover-title{
+    font-family:var(--font-display);font-weight:800;
+    font-size:clamp(40px,7.4vw,98px);line-height:1.02;letter-spacing:-.022em;
+    max-width:16ch;text-wrap:balance;
+  }
+  .cover-title .missing{color:var(--signal)}
+  .cover-sub{
+    font-family:var(--font-mono);font-size:14px;color:var(--dim);
+    margin-top:26px;letter-spacing:.02em;
+  }
+  .scroll-cue{
+    position:absolute;left:50%;bottom:34px;transform:translateX(-50%);
+    display:flex;flex-direction:column;align-items:center;gap:10px;z-index:6;
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.22em;
+    color:var(--dim);text-transform:uppercase;opacity:calc(1 - var(--p) * 6);
+  }
+  .scroll-cue .line{
+    width:1px;height:46px;position:relative;overflow:hidden;
+    background:linear-gradient(to bottom,transparent,rgba(138,148,168,.5));
+  }
+  .scroll-cue .line::after{
+    content:'';position:absolute;left:0;top:0;width:1px;height:50%;
+    background:var(--signal);animation:cueDrop 2.1s cubic-bezier(.7,0,.3,1) infinite;
+  }
+  @keyframes cueDrop{0%{transform:translateY(-100%)}60%,100%{transform:translateY(300%)}}
+
+  /* Nav goes transparent while over the cover */
+  .nav{transition:background .4s ease,border-color .4s ease}
+  .nav.at-top{background:transparent;backdrop-filter:none;border-bottom-color:transparent}
+
+  @media (max-width:700px){ .cover{height:170vh} }
+  @media (prefers-reduced-motion: reduce){
+    .cover{height:100vh}
+    .cover-stage{position:relative}
+    .cover-scene,.cover-overlay,.cover-land,.sun,.sky-warm{transform:none!important}
+    .cover-overlay,.sun,.sky-warm{opacity:1!important}
+    .scroll-cue{display:none}
+    .nav.at-top{background:rgba(13,19,32,.85);backdrop-filter:blur(10px)}
+  }
 </style>
 </head>
 <body>
@@ -307,11 +461,34 @@
   </div>
 </nav>
 
-<header class="hero" id="top">
+<header class="cover" id="top" aria-label="Intro">
+  <div class="cover-stage">
+    <div class="cover-scene" aria-hidden="true">
+      <div class="sky-night"></div>
+      <div class="sky-warm"></div>
+      <div class="sun"></div>
+      <div class="cover-land">
+        <svg viewBox="0 0 1440 400" preserveAspectRatio="none" focusable="false">
+          <path class="hill-far" d="M0,176 C240,118 430,150 660,138 C910,126 1090,172 1440,126 L1440,400 L0,400 Z"/>
+          <path class="hill-near" d="M0,250 C260,206 490,250 730,234 C990,217 1190,264 1440,224 L1440,400 L0,400 Z"/>
+        </svg>
+      </div>
+    </div>
+    <div class="cover-overlay">
+      <p class="cover-eyebrow"><span class="tick">▸</span> Austen “Sauce” Mollick · Analytics Engineer</p>
+      <p class="cover-setup">Most dashboards show what’s there.</p>
+      <h1 class="cover-title">I build systems that find <span class="missing">what’s missing.</span></h1>
+      <p class="cover-sub">// complexity in. clarity out.</p>
+    </div>
+    <div class="scroll-cue" aria-hidden="true"><span>scroll</span><span class="line"></span></div>
+  </div>
+</header>
+
+<section class="hero" id="intro">
   <div class="wrap hero-grid">
     <div>
-      <p class="eyebrow"><span class="tick">▸</span> ANALYTICS ENGINEER · BI DEVELOPER · DATA ANALYST</p>
-      <h1>Most dashboards show what’s there.<br>I build systems that find <span class="missing">what’s missing.</span></h1>
+      <p class="eyebrow"><span class="tick">▸</span> what the title doesn’t say</p>
+      <h2>Self-taught, end to end — warehouse to dashboard.</h2>
       <p class="hero-sub">I’m <strong>Austen “Sauce” Mollick</strong> — a self-taught analytics engineer who queries billion-row warehouses, models the results into actionable insights, and automates everything in between. My flagship analysis surfaced <strong>$120M+ in annualized opportunity</strong> hidden inside 3.8 billion rows.</p>
       <p class="hero-id">currently: Sales Analyst, Category Management · Fortune 500 CPG · operating well above title</p>
       <div class="hero-cta">
@@ -328,7 +505,7 @@
       <p class="voidgrid-caption">// store × product matrix — finding and closing distribution voids</p>
     </div>
   </div>
-</header>
+</section>
 
 <section class="section" id="about">
   <div class="wrap">
@@ -369,9 +546,9 @@
       <p class="flagship-tag">FLAGSHIP</p>
       <h3>Distribution Void Analysis at Scale</h3>
       <div class="flagship-metrics">
-        <div class="metric"><span class="num">$120–133M</span><span class="lbl">annualized opportunity surfaced</span></div>
-        <div class="metric"><span class="num">3.8B+</span><span class="lbl">rows queried, store-UPC-week grain</span></div>
-        <div class="metric"><span class="num">~1,500</span><span class="lbl">region/product combinations flagged</span></div>
+        <div class="metric"><span class="num" data-count="120" data-prefix="$" data-suffix="–133M">$120–133M</span><span class="lbl">annualized opportunity surfaced</span></div>
+        <div class="metric"><span class="num" data-count="3.8" data-decimals="1" data-suffix="B+">3.8B+</span><span class="lbl">rows queried, store-UPC-week grain</span></div>
+        <div class="metric"><span class="num" data-count="1500" data-prefix="~" data-thousands="1">~1,500</span><span class="lbl">region/product combinations flagged</span></div>
       </div>
       <div class="stage-labels" aria-hidden="true">
         <span class="stage-label">PROBLEM</span>
@@ -953,6 +1130,185 @@
     window._ambientResizeTimer = setTimeout(resize, 150);
   });
   requestAnimationFrame(draw);
+})();
+</script>
+<script>
+/* ---------- Scroll choreography: reveal, count-up, scrollspy, progress, parallax ---------- */
+(function(){
+  var doc = document.documentElement;
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Hidden reveal states only apply when JS is present
+  doc.classList.add('reveal-ready');
+
+  // Progress bar
+  var bar = document.createElement('div');
+  bar.className = 'scroll-progress';
+  document.body.appendChild(bar);
+
+  // Tag elements as reveal targets and assign per-item stagger
+  function tag(selector, stagger){
+    var els = document.querySelectorAll(selector);
+    Array.prototype.forEach.call(els, function(el, i){
+      el.classList.add('reveal');
+      if(stagger) el.style.setProperty('--reveal-delay', (i * stagger) + 'ms');
+    });
+  }
+  // Reveal sequence for the intro block
+  tag('.hero .eyebrow, .hero h2, .hero-sub, .hero-id, .hero-cta', 90);
+  // Scroll reveals
+  tag('.section-head', 0);
+  tag('.about-copy p', 90);
+  tag('.about-aside', 0);
+  tag('.flagship', 0);
+  tag('.flagship .metric', 110);
+  tag('.project', 70);
+  tag('.skill-group', 70);
+  tag('.certs', 0);
+  tag('.contact h2, .contact p, .contact-links', 80);
+
+  var reveals = document.querySelectorAll('.reveal');
+
+  if(reduced){
+    Array.prototype.forEach.call(reveals, function(el){ el.classList.add('is-visible'); });
+  } else if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting) e.target.classList.add('is-visible');
+        else e.target.classList.remove('is-visible'); // reverse on scroll-away, both directions
+      });
+    }, { threshold:0.12, rootMargin:'0px 0px -10% 0px' });
+    Array.prototype.forEach.call(reveals, function(el){ io.observe(el); });
+  } else {
+    Array.prototype.forEach.call(reveals, function(el){ el.classList.add('is-visible'); });
+  }
+
+  // Count-up for the flagship metrics
+  function fmt(v, dec, pre, suf, thou){
+    var s = dec ? v.toFixed(dec) : Math.round(v).toString();
+    if(thou) s = Number(s).toLocaleString();
+    return pre + s + suf;
+  }
+  function settle(el){
+    el.textContent = fmt(parseFloat(el.getAttribute('data-count')),
+      parseInt(el.getAttribute('data-decimals')||'0',10),
+      el.getAttribute('data-prefix')||'', el.getAttribute('data-suffix')||'',
+      el.getAttribute('data-thousands')==='1');
+  }
+  function countUp(el){
+    var to   = parseFloat(el.getAttribute('data-count'));
+    var dec  = parseInt(el.getAttribute('data-decimals')||'0',10);
+    var pre  = el.getAttribute('data-prefix')||'';
+    var suf  = el.getAttribute('data-suffix')||'';
+    var thou = el.getAttribute('data-thousands')==='1';
+    var dur = 1100, start = null;
+    function step(now){
+      if(start===null) start = now;
+      var p = Math.min(1, (now - start)/dur);
+      var e = 1 - Math.pow(1 - p, 3); // easeOutCubic
+      el.textContent = fmt(to * e, dec, pre, suf, thou);
+      if(p < 1) requestAnimationFrame(step); else settle(el);
+    }
+    requestAnimationFrame(step);
+  }
+  var counters = document.querySelectorAll('[data-count]');
+  if(reduced || !('IntersectionObserver' in window)){
+    Array.prototype.forEach.call(counters, settle);
+  } else {
+    var cio = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ countUp(e.target); cio.unobserve(e.target); }
+      });
+    }, { threshold:0.6 });
+    Array.prototype.forEach.call(counters, function(el){ cio.observe(el); });
+  }
+
+  // Read-progress bar, scrollspy, nav state, panel parallax, and the cover
+  // scrub are all driven by the cinematic-cover engine below (one rAF loop).
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1/dist/lenis.min.js"></script>
+<script>
+/* Cinematic cover scrub + smooth inertia scroll + progress + scrollspy + nav state.
+   One rAF loop. Everything is a pure function of scroll position, so it plays
+   forward as you scroll down and reverses as you scroll back up. */
+(function(){
+  var doc = document.documentElement;
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var stage    = document.querySelector('.cover-stage');
+  var cover    = document.querySelector('.cover');
+  var bar      = document.querySelector('.scroll-progress');
+  var nav      = document.querySelector('.nav');
+  var panel    = document.querySelector('.voidgrid-panel');
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('.nav-links a'));
+  var secMap   = navLinks.map(function(a){
+    return { link:a, sec:document.getElementById(a.getAttribute('href').replace('#','')) };
+  }).filter(function(x){ return x.sec; });
+
+  // Buttery inertia scroll. Skipped under reduced-motion or if the lib fails to
+  // load, in which case native scrolling carries the whole experience.
+  var lenis = null;
+  if(!reduced && typeof window.Lenis === 'function'){
+    lenis = new window.Lenis({ lerp:0.09, wheelMultiplier:1 });
+    // Route in-page anchor clicks through Lenis so they glide instead of jump
+    Array.prototype.forEach.call(document.querySelectorAll('a[href^="#"]'), function(a){
+      a.addEventListener('click', function(e){
+        var id = a.getAttribute('href');
+        if(id.length > 1){
+          var el = document.querySelector(id);
+          if(el){ e.preventDefault(); lenis.scrollTo(el, { offset:-70 }); }
+        }
+      });
+    });
+  }
+
+  function clamp01(v){ return v < 0 ? 0 : (v > 1 ? 1 : v); }
+  var vh = window.innerHeight;
+  window.addEventListener('resize', function(){ vh = window.innerHeight; }, { passive:true });
+
+  function update(){
+    var st = window.pageYOffset || doc.scrollTop || 0;
+
+    // Cover pan-in: 0 at the top, 1 once the pinned zone is fully scrolled
+    if(stage && cover){
+      var range = cover.offsetHeight - vh;
+      var p = reduced ? 0 : clamp01(range > 0 ? st / range : 0);
+      stage.style.setProperty('--p', p.toFixed(4));
+    }
+
+    // Read-progress bar
+    if(bar){
+      var h = doc.scrollHeight - vh;
+      bar.style.width = (h > 0 ? clamp01(st / h) * 100 : 0) + '%';
+    }
+
+    // Nav: transparent over the cover, solid once you start moving
+    if(nav){ if(st < 60) nav.classList.add('at-top'); else nav.classList.remove('at-top'); }
+
+    // Gentle in-view parallax on the void-grid panel
+    if(!reduced && panel){
+      var rect = panel.getBoundingClientRect();
+      var center = rect.top + rect.height / 2;
+      panel.style.transform = 'translateY(' + ((vh / 2 - center) * 0.05).toFixed(1) + 'px)';
+    }
+
+    // Scrollspy
+    var pos = st + vh * 0.35, cur = null;
+    for(var i = 0; i < secMap.length; i++){
+      if(secMap[i].sec.offsetTop <= pos) cur = secMap[i];
+    }
+    navLinks.forEach(function(a){ a.classList.remove('active'); });
+    if(cur) cur.link.classList.add('active');
+  }
+
+  function raf(t){
+    if(lenis) lenis.raf(t);
+    update();
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+  update();
 })();
 </script>
 
