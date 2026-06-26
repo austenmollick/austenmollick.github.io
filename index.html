@@ -152,20 +152,51 @@
     font-family:var(--font-mono);font-weight:500;font-size:13px;
     color:var(--dim);letter-spacing:.08em;margin-bottom:22px;
   }
-  .directive{list-style:none}
-  .directive li{
-    display:flex;align-items:center;gap:14px;
-    font-family:var(--font-mono);font-size:14.5px;
-    padding:10px 0;
-  }
+  .directive{list-style:none;display:flex;flex-direction:column}
   .directive li + li{border-top:1px dashed var(--gridline)}
+  .step{position:relative}
+  .step > summary{
+    list-style:none;cursor:pointer;user-select:none;
+    display:flex;align-items:center;gap:14px;
+    font-family:var(--font-mono);font-size:14.5px;color:var(--ink);
+    padding:11px 2px;transition:color .2s ease;
+  }
+  .step > summary::-webkit-details-marker{display:none}
+  .step > summary:hover{color:var(--signal)}
   .directive .node{
-    width:9px;height:9px;border-radius:50%;
-    background:var(--gridline);flex-shrink:0;
-    border:1px solid var(--dim);
+    width:9px;height:9px;border-radius:50%;flex-shrink:0;
+    background:var(--gridline);border:1px solid var(--dim);
+    transition:background .2s ease,border-color .2s ease,box-shadow .2s ease;
+  }
+  .step[open] > summary .node,.step > summary:hover .node{
+    background:var(--signal);border-color:var(--signal);
+    box-shadow:0 0 10px rgba(255,180,84,.5);
   }
   .directive li:last-child .node{background:var(--closed);border-color:var(--closed)}
-  .directive .arrow{color:var(--dim);margin-left:auto;font-size:12px}
+  .step[open] .step-name{color:var(--signal)}
+  .chev{
+    margin-left:auto;width:8px;height:8px;flex-shrink:0;
+    border-right:1.5px solid var(--dim);border-bottom:1.5px solid var(--dim);
+    transform:rotate(45deg);transition:transform .3s ease,border-color .2s ease;
+  }
+  .step > summary:hover .chev{border-color:var(--signal)}
+  .step[open] > summary .chev{transform:rotate(-135deg);border-color:var(--signal)}
+  .step-panel{overflow:hidden}
+  .step-panel p{
+    font-family:var(--font-body);font-size:14px;line-height:1.62;color:var(--dim);
+    margin:0;padding:2px 2px 16px 23px;
+  }
+  .step[open] .step-panel p{animation:stepIn .4s ease both}
+  @keyframes stepIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  @supports (interpolate-size: allow-keywords){
+    .directive{interpolate-size:allow-keywords}
+    .step::details-content{
+      height:0;overflow:hidden;
+      transition:height .34s cubic-bezier(.2,.7,.2,1),content-visibility .34s;
+      transition-behavior:allow-discrete;
+    }
+    .step[open]::details-content{height:auto}
+  }
   .about-aside .aside-note{
     font-size:14px;color:var(--dim);margin-top:22px;line-height:1.6;
   }
@@ -576,12 +607,30 @@
       <aside class="about-aside">
         <h3>ENGINEERING DIRECTIVE — EVERY PROJECT, EVERY TIME</h3>
         <ol class="directive">
-          <li><span class="node"></span>Understand<span class="arrow">↓</span></li>
-          <li><span class="node"></span>Plan<span class="arrow">↓</span></li>
-          <li><span class="node"></span>Act<span class="arrow">↓</span></li>
-          <li><span class="node"></span>Verify<span class="arrow">↓</span></li>
-          <li><span class="node"></span>Clean<span class="arrow">↓</span></li>
-          <li><span class="node"></span>Report</li>
+          <li><details class="step" name="directive">
+            <summary><span class="node"></span><span class="step-name">Understand</span><span class="chev" aria-hidden="true"></span></summary>
+            <div class="step-panel"><p>Before writing a line, I identify the stack, then read the actual artifacts (files, schemas, query plans) instead of guessing. I restate the goal in one sentence, and if a different approach would serve it better than what was asked, I say so first.</p></div>
+          </details></li>
+          <li><details class="step" name="directive">
+            <summary><span class="node"></span><span class="step-name">Plan</span><span class="chev" aria-hidden="true"></span></summary>
+            <div class="step-panel"><p>I weigh two or three approaches and pick one with reasoning. For a bug, I form a hypothesis (X is happening because Y, confirmed by Z) and commit to the single next step before touching anything.</p></div>
+          </details></li>
+          <li><details class="step" name="directive">
+            <summary><span class="node"></span><span class="step-name">Act</span><span class="chev" aria-hidden="true"></span></summary>
+            <div class="step-panel"><p>I make the smallest change that completes the step. Surgical edits, one concern at a time, matched to the surrounding style. No speculative features, no while-I'm-here cleanup of unrelated code.</p></div>
+          </details></li>
+          <li><details class="step" name="directive">
+            <summary><span class="node"></span><span class="step-name">Verify</span><span class="chev" aria-hidden="true"></span></summary>
+            <div class="step-panel"><p>I trace the logic, then produce evidence of correctness, not vibes: the exact command, query, or observation that proves it works. I review my own work the way a senior reviewer would before calling it done.</p></div>
+          </details></li>
+          <li><details class="step" name="directive">
+            <summary><span class="node"></span><span class="step-name">Clean</span><span class="chev" aria-hidden="true"></span></summary>
+            <div class="step-panel"><p>I leave the codebase cleaner than I found it, within scope. Debug instrumentation pulled, dead code and orphaned queries removed, superseded backups flagged. Every cleanup called out so it can be vetoed.</p></div>
+          </details></li>
+          <li><details class="step" name="directive">
+            <summary><span class="node"></span><span class="step-name">Report</span><span class="chev" aria-hidden="true"></span></summary>
+            <div class="step-panel"><p>I close every turn with what changed, how to verify it, what was cleaned up, and the next step, stated but not executed. Clarity through precision, not volume.</p></div>
+          </details></li>
         </ol>
         <p class="aside-note">A real sequence, not a slogan — it’s the same loop that root-caused a 72% false-mismatch rate in data validation before it reached leadership. Scroll down to 'Case studies' (API-Driven Data Validation: Retail Shelf Capacity)</p>
       </aside>
@@ -761,7 +810,7 @@
 
 <footer>
   <div class="wrap">
-    <span>Austen “Sauce” Mollick — built by hand, like everything else here.</span>
+    <span>Austen “Sauce” Mollick — the more I know, the more I find to learn.</span>
     <span>understand → plan → act → verify → clean → report</span>
   </div>
 </footer>
